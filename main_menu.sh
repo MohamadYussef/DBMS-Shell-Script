@@ -17,7 +17,7 @@ main_menu() {
             ;; # ls -F ./db | grep / | sed -n 's/\///gp' ;;
         "Connect To Database")
             clear
-            connect
+            connect_db
             ;;
         "Drop Database")
             clear
@@ -37,7 +37,6 @@ create_db() {
     else
         if [[ "$db_name" =~ ^[a-z]+[a-z1-9_]+ ]]; then
             mkdir ./db/$db_name
-            db_list+=($db_name)
             echo "The $db_name database was created successfully"
         else
             echo "Invalid name"
@@ -50,7 +49,6 @@ drop_db() {
     read -p "Enter the Database you want to remove: " db_drop
     if [[ $(find ./db -name $db_drop) ]]; then
         rm -r ./db/$db_drop
-        db_list=(${db_list[@]/$db_drop/})
         echo "The $db_drop is removed successfully"
     else
         echo "$db_drop Database not exist"
@@ -87,6 +85,22 @@ connect_db() {
         done
     done
     echo hello
+}
+
+create_table() {
+    read -p "Enter the table name: " t_name
+    if [ -e ./db/"$db_name/$t_name" ]; then
+        echo "Table already exist"
+
+    else
+        if [[ "$db_name" =~ ^[a-z]+[a-z1-9_]+ ]]; then
+            touch ./db/$db_name/$t_name
+            read -p "Enter the number o fields: " fields_num
+
+        else
+            echo "Invalid name"
+        fi
+    fi
 }
 init
 main_menu
