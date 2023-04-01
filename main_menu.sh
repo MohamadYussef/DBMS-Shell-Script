@@ -1,13 +1,29 @@
 #!/bin/bash
 
 main_menu() {
-    PS3="Choose an action: "
+    PS3='>'
+    echo "Choose an action: "
     select choice in "Create Database" "List Databases" "Connect To Database" "Drop Database" "exit"; do
         case $choice in
-        "Create Database") create_db ;;
-        "List Databases") echo $(ls ./db) ;; # ls -F ./db | grep / | sed -n 's/\///gp' ;;
-        "Connect To Database") connect ;;
-        "Drop Database") drop_db ;;
+        "Create Database")
+            clear
+            create_db
+            echo -e "\nPress Enter to view menu"
+            ;;
+        "List Databases")
+            clear
+            echo -e "Available Databases:\n$(ls -1 ./db)"
+            echo -e "\nPress Enter to view menu"
+            ;; # ls -F ./db | grep / | sed -n 's/\///gp' ;;
+        "Connect To Database")
+            clear
+            connect
+            ;;
+        "Drop Database")
+            clear
+            drop_db
+            echo -e "\nPress Enter to view menu"
+            ;;
         "exit") exit ;;
         *) echo "Invalid choice" ;;
         esac
@@ -16,21 +32,21 @@ main_menu() {
 create_db() {
     read -p "Enter the name of the Database that will be created: " db_name
     if [ -e ./db/"$db_name" ]; then
-        echo "sorry that Database name exist"
-        # create_db
+        echo "Database name already exist"
+
     else
         if [[ "$db_name" =~ ^[a-z]+[a-z1-9_]+ ]]; then
             mkdir ./db/$db_name
             db_list+=($db_name)
             echo "The $db_name database was created successfully"
         else
-            echo "invalid name for Database"
+            echo "Invalid name"
         fi
     fi
 }
 
 drop_db() {
-    echo $(ls ./db)
+    echo -e "Available Databases: \n$(ls -1 ./db)"
     read -p "Enter the Database you want to remove: " db_drop
     if [[ $(find ./db -name $db_drop) ]]; then
         rm -r ./db/$db_drop
@@ -47,11 +63,12 @@ init() {
     fi
 }
 
-connect() {
-    PS3="Choose a database to connect to "
+connect_db() {
+    PS3="Choose a database to connect to:  "
+    echo -e "Available Databases:"
     select db_name in $(ls ./db); do
         cd ./db/$db_name
-        PS3="Choose an action "
+        PS3="Choose an action: "
         select db_action in "Create table" "Drop table" "Insert table" "Select table" "Delete Table" "List table" "Update table" "Return to the main menu"; do
             case $db_action in
             "Create table") echo "function not added yet" ;;
