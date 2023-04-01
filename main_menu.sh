@@ -131,7 +131,7 @@ create_table() {
             index=1
             while true; do
                 read -p "Enter Primary key data type: " pk_t
-                if [ $pk_t = int ] || [ $pk_t = string ] || [ $pk_t = bool ]; then
+                if [ $pk_t = int ] || [ $pk_t = string ]; then
                     echo -en "\n${pk_t}": >>$t_name
                     break
                 else
@@ -139,7 +139,7 @@ create_table() {
                 fi
             done
             while [ $index -lt $fields_num ]; do
-                read -p "Enter type for field $index: " field_type
+                read -p "Enter data type for field $index: " field_type
                 if [ $field_type = int ] || [ $field_type = string ] || [ $field_type = bool ];
                 then 
                     echo -n ${field_type}: >>$t_name
@@ -147,17 +147,86 @@ create_table() {
                 else
                     echo "Invalid datatype"
                 fi
-                
             done
-
         else
             echo "Invalid name"
             create_table
         fi
+        sed -i 's/:$//' $t_name &
     fi
 }
 
+check_datatype(){
+    datatype_postion=$1
+    data_type=`awk -F: -v var="$datatype_postion" '{if(NR==2)print $var}' $ins_table`
+    if [ "$data_type" = int ];then
+        if ! [[ "$field_data" =~ ^[0-9]+$ ]]; then
+            echo "Invalid input by data type"
+        else
+            status=done
+        fi
+    elif [ "$data_type" = string ];then
+        if ! [[ "$field_data" =~ ^[a-zA-Z]+[a-zA-Z1-9_]+ ]]; then
+            echo "Invalid input by data type"
+        else
+            status=done
+        fi
+    elif [ "$data_type" = bool ];then
+        if ! [[ "$field_data" =~ [tT]rue ]] || ! [[ "$field_data" =~ [fF]alse ]]; then
+            echo "Invalid input by data type"
+        else
+            status=done
+        fi
+    fi
+}
 
+insert_table (){
+    ls
+    read -p "Enter the table that you want to insert it: " ins_table
+    if [[ `find -name $ins_table` ]];then
+        fields_num=`awk -F: '{print NF}' $ins_table | head -1`
+        for ((i=1; i<=$fields_num;i++));do
+            status=""
+            echo this is $i
+            if [ $i -eq 1 ]; then
+                while true; do
+                    if [ "$status" = "done" ];then
+                        break
+                    fi
+                    read -p "enter data in field number $i: " field_data
+                    if [[ `awk -F: '{if(NR>2)print $1}' $ins_table | grep $field_data 2> /dev/null` ]]
+                    then
+                        echo "id is duplicated"
+                    elif [ -z $field_data ]; then
+                        echo "id is NULL"
+                    elif [ "$status" != "done" ]; then
+                        check_datatype $i
+                    fi
+                done
+            else
+                status=""
+                while true; do
+                    if [ "$status" = "done" ];then
+                        break
+                    fi
+                    read -p "enter data in field number $i: " field_data
+                    if [ "$status" != "done" ]; then
+                        check_datatype $i
+                    fi
+                done
+            fi
+            data=$data:${field_data}
+            
+            # echo -n "${field_data}:" >>$ins_table
+        done
+        echo $data:>>$ins_table
+        data=""
+        sed -i 's/:$//' $ins_table
+        sed -i 's/^://' $ins_table
+    else
+        echo "$ins_table is Invalid table name"
+    fi
+}
 
 init
 main_menu
