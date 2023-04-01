@@ -55,6 +55,15 @@ drop_db() {
     fi
 }
 
+# drop_db2() {
+#     PS3="Choose a database to drop to:  "
+#     echo -e "Available Databases:"
+#     select db_name in $(ls ./db); do
+
+#     done
+
+# }
+
 init() {
     if ! [ -d ./db/ ]; then
         mkdir ./db/
@@ -62,43 +71,75 @@ init() {
 }
 
 connect_db() {
-    PS3="Choose a database to connect to:  "
+
+    PS3="Select a Database to connect to: "
     echo -e "Available Databases:"
     select db_name in $(ls ./db); do
-        cd ./db/$db_name
-        PS3="Choose an action: "
-        select db_action in "Create table" "Drop table" "Insert table" "Select table" "Delete Table" "List table" "Update table" "Return to the main menu"; do
-            case $db_action in
-            "Create table") echo "function not added yet" ;;
-            "Drop table") echo "function not added yet" ;;
-            "Insert table") echo "function not added yet" ;;
-            "Select table") echo "function not added yet" ;;
-            "Delete Table") echo "function not added yet" ;;
-            "List Table") echo "function not added yet" ;;
-            "Update Table") echo "function not added yet" ;;
-            "Return to the main menu")
-                cd ..
-                main_menu
-                ;;
-            *) echo "Invalid choice" ;;
-            esac
-        done
+        if [ $db_name ]; then
+            cd ./db/$db_name
+            PS3="$(pwd | awk -F "/" '{print $NF}') >"
+            clear
+            db_actions
+        else
+            echo "db not exist"
+            connect_db
+
+        fi
+
     done
-    echo hello
+
+}
+
+db_actions() {
+    echo "Choose an action: "
+    select db_action in "Create table" "Drop table" "Insert table" "Select table" "Delete Table" "List table" "Update table" "Return to the main menu"; do
+        case $db_action in
+        "Create table") create_table ;;
+        "Drop table") echo "function not added yet" ;;
+        "Insert table") echo "function not added yet" ;;
+        "Select table") echo "function not added yet" ;;
+        "Delete Table") echo "function not added yet" ;;
+        "List Table") echo "function not added yet" ;;
+        "Update Table") echo "function not added yet" ;;
+        "Return to the main menu")
+            cd ../..
+            clear
+            main_menu
+            ;;
+        *) echo "Invalid choice" ;;
+        esac
+    done
 }
 
 create_table() {
     read -p "Enter the table name: " t_name
-    if [ -e ./db/"$db_name/$t_name" ]; then
+    if [ -e ./$t_name ]; then
         echo "Table already exist"
-
+        create_table
     else
         if [[ "$db_name" =~ ^[a-z]+[a-z1-9_]+ ]]; then
-            touch ./db/$db_name/$t_name
-            read -p "Enter the number o fields: " fields_num
+            touch ./$t_name
+            read -p "Enter the number of fields: " fields_num
+            read -p "Enter Primary key: " pk
+            echo -n ${pk}: >>$t_name
+            index=1
+            while [ $index -lt $fields_num ]; do
+                read -p "Enter name for field $index: " field_name
+                echo -n ${field_name}: >>$t_name
+                let index++
+            done
+            index=1
+            read -p "Enter Primary key type: " pk_t
+            echo -en "\n${pk_t}": >>$t_name
+            while [ $index -lt $fields_num ]; do
+                read -p "Enter type for field $index: " field_type
+                echo -n ${field_type}: >>$t_name
+                let index++
+            done
 
         else
             echo "Invalid name"
+            create_table
         fi
     fi
 }
