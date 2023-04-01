@@ -96,7 +96,7 @@ db_actions() {
         case $db_action in
         "Create table") create_table ;;
         "Drop table") echo "function not added yet" ;;
-        "Insert table") echo "function not added yet" ;;
+        "Insert table") insert_table ;;
         "Select table") echo "function not added yet" ;;
         "Delete Table") echo "function not added yet" ;;
         "List Table") echo "function not added yet" ;;
@@ -129,12 +129,25 @@ create_table() {
                 let index++
             done
             index=1
-            read -p "Enter Primary key type: " pk_t
-            echo -en "\n${pk_t}": >>$t_name
+            while true; do
+                read -p "Enter Primary key data type: " pk_t
+                if [ $pk_t = int ] || [ $pk_t = string ] || [ $pk_t = bool ]; then
+                    echo -en "\n${pk_t}": >>$t_name
+                    break
+                else
+                    echo "Invalid datatype"
+                fi
+            done
             while [ $index -lt $fields_num ]; do
                 read -p "Enter type for field $index: " field_type
-                echo -n ${field_type}: >>$t_name
-                let index++
+                if [ $field_type = int ] || [ $field_type = string ] || [ $field_type = bool ];
+                then 
+                    echo -n ${field_type}: >>$t_name
+                    let index++
+                else
+                    echo "Invalid datatype"
+                fi
+                
             done
 
         else
@@ -143,5 +156,8 @@ create_table() {
         fi
     fi
 }
+
+
+
 init
 main_menu
