@@ -117,7 +117,7 @@ create_table() {
         echo "Table already exist"
         create_table
     else
-        if [[ "$db_name" =~ ^[a-z]+[a-z1-9_]+ ]]; then
+        if [[ "$db_name" =~ ^[a-zA-Z]+[a-zA-Z1-9_]+ ]]; then
             touch ./$t_name
             read -p "Enter the number of fields: " fields_num
             read -p "Enter Primary key: " pk
