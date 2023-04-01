@@ -40,4 +40,3 @@ drop_DB() {
 }
 
 main_menu
-echo test
