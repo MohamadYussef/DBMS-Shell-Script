@@ -35,7 +35,7 @@ create_db() {
         echo "Database name already exist"
 
     else
-        if [[ "$db_name" =~ ^[a-z]+[a-z1-9_]+ ]]; then
+        if [[ "$db_name" =~ ^[a-zA-Z]+[a-zA-Z1-9_]+ ]]; then
             mkdir ./db/$db_name
             echo "The $db_name database was created successfully"
         else
