@@ -1,42 +1,75 @@
 #!/bin/bash
 
 main_menu() {
-    PS3="choose an option in the Database Engine: "
-    select choise in "Create Database" "List Databases" "Connect To Databases" "Drop Database" "exit"; do
-        case $choise in
-        "Create Database") create_DB ;;
-        "List Databases") ls -lF ./DB | grep / ;;
-        "Connect To Databases") echo co ;;
-        "Drop Database") drop_DB ;;
+    PS3="Choose an action: "
+    select choice in "Create Database" "List Databases" "Connect To Database" "Drop Database" "exit"; do
+        case $choice in
+        "Create Database") create_db ;;
+        "List Databases") echo $(ls ./db) ;; # ls -F ./db | grep / | sed -n 's/\///gp' ;;
+        "Connect To Database") connect ;;
+        "Drop Database") drop_db ;;
         "exit") exit ;;
-        *) echo "Invalid choise" ;;
+        *) echo "Invalid choice" ;;
         esac
     done
 }
-create_DB() {
-    read -p "Enter the name of the Database that will be created: " DB_name
-    if [ -e ./DB/"$DB_name" ]; then
+create_db() {
+    read -p "Enter the name of the Database that will be created: " db_name
+    if [ -e ./db/"$db_name" ]; then
         echo "sorry that Database name exist"
-        # create_DB
+        # create_db
     else
-        if [[ "$DB_name" =~ ^[a-z]+[1-9]+ ]]; then
-            mkdir ./DB/$DB_name
-            echo "The $DB_name database was created successfully"
+        if [[ "$db_name" =~ ^[a-z]+[a-z1-9_]+ ]]; then
+            mkdir ./db/$db_name
+            db_list+=($db_name)
+            echo "The $db_name database was created successfully"
         else
-            echo "invaled name for Database"
+            echo "invalid name for Database"
         fi
     fi
 }
 
-drop_DB() {
-    ls -F ./DB/ | grep /
-    read -p "Enter the Database you want to remove: " DB_drop
-    if [[ $(find ./DB -name $DB_drop) ]]; then
-        rm -r ./DB/$DB_drop
-        echo "The $DB_drop is removed successfully"
+drop_db() {
+    echo $(ls ./db)
+    read -p "Enter the Database you want to remove: " db_drop
+    if [[ $(find ./db -name $db_drop) ]]; then
+        rm -r ./db/$db_drop
+        db_list=(${db_list[@]/$db_drop/})
+        echo "The $db_drop is removed successfully"
     else
-        echo "$DB_drop Database not exist"
+        echo "$db_drop Database not exist"
     fi
 }
 
+init() {
+    if ! [ -d ./db/ ]; then
+        mkdir ./db/
+    fi
+}
+
+connect() {
+    PS3="Choose a database to connect to "
+    select db_name in $(ls ./db); do
+        cd ./db/$db_name
+        PS3="Choose an action "
+        select db_action in "Create table" "Drop table" "Insert table" "Select table" "Delete Table" "List table" "Update table" "Return to the main menu"; do
+            case $db_action in
+            "Create table") echo "function not added yet" ;;
+            "Drop table") echo "function not added yet" ;;
+            "Insert table") echo "function not added yet" ;;
+            "Select table") echo "function not added yet" ;;
+            "Delete Table") echo "function not added yet" ;;
+            "List Table") echo "function not added yet" ;;
+            "Update Table") echo "function not added yet" ;;
+            "Return to the main menu")
+                cd ..
+                main_menu
+                ;;
+            *) echo "Invalid choice" ;;
+            esac
+        done
+    done
+    echo hello
+}
+init
 main_menu
