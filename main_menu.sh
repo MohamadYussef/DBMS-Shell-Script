@@ -98,7 +98,7 @@ db_actions() {
         "Drop table") echo "function not added yet" ;;
         "Insert table") insert_table ;;
         "Select table") select_table ;;
-        "Delete Table") echo "function not added yet" ;;
+        "Delete Table") delete_table ;;
         "List Table") echo "function not added yet" ;;
         "Update Table") echo "function not added yet" ;;
         "Return to the main menu")
@@ -235,15 +235,6 @@ insert_table (){
 select_table(){
     clear
     select_col(){
-        # head -1 $select_table
-        # read -p "Enter col name sperated by ':' :  " columns
-        # echo $columns
-        # awk -F: -v var="$columns" '{
-        #     if(NR>2){
-        #         for(int i=0 )
-        #         print $var
-        #         }
-        #     }' $select_table
         select col in `head -1 $select_table | tr ":" " "`;do
             case $REPLY in 
                 $REPLY) 
@@ -266,8 +257,8 @@ select_table(){
                 "select by col") select_col;;
                 "select by specific word") 
                     read -p "enter the word: " word
-                    if [[ `tail -n +3 s|grep -i "$word"` ]]; then
-                        echo `tail -n +3 s|grep -i "$word"`
+                    if [[ `tail -n +3 $select_table |grep -i "$word"` ]]; then
+                        echo `tail -n +3 $select_table |grep -i "$word"`
                     else
                         echo "$word doesn't exsit"
                     fi
@@ -282,6 +273,22 @@ select_table(){
         else
             echo "$ins_table is Invalid table name"
         fi
+    fi
+}
+
+delete_table(){
+    ls
+    read -p "Enter the table that you want to delete from it: " select_table
+    if [[ `find -name $select_table 2> /dev/null` ]];then
+        read -p "enter the word from the row you want to delete: " word
+        if [[ `tail -n +3 $select_table|grep -i "$word"` ]]; then
+            sed -i "/$word/d" $select_table
+            echo "the row deleted successfully "
+        else
+            echo "$word doesn't exsit"
+        fi
+    else
+        echo "$select_table doesn't exist"
     fi
 }
 
