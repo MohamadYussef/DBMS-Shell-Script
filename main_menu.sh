@@ -97,7 +97,7 @@ db_actions() {
         "Create table") create_table ;;
         "Drop table") echo "function not added yet" ;;
         "Insert table") insert_table ;;
-        "Select table") echo "function not added yet" ;;
+        "Select table") select_table ;;
         "Delete Table") echo "function not added yet" ;;
         "List Table") echo "function not added yet" ;;
         "Update Table") echo "function not added yet" ;;
@@ -181,13 +181,13 @@ check_datatype(){
 }
 
 insert_table (){
+    clear
     ls
     read -p "Enter the table that you want to insert it: " ins_table
-    if [[ `find -name $ins_table` ]];then
+    if [[ `find -name $ins_table 2> /dev/null` ]];then
         fields_num=`awk -F: '{print NF}' $ins_table | head -1`
         for ((i=1; i<=$fields_num;i++));do
             status=""
-            echo this is $i
             if [ $i -eq 1 ]; then
                 while true; do
                     if [ "$status" = "done" ];then
@@ -224,7 +224,64 @@ insert_table (){
         sed -i 's/:$//' $ins_table
         sed -i 's/^://' $ins_table
     else
-        echo "$ins_table is Invalid table name"
+        if [ -z $ins_table ]; then
+            echo "table name is empty"
+        else
+            echo "$ins_table is Invalid table name"
+        fi
+    fi
+}
+
+select_table(){
+    clear
+    select_col(){
+        # head -1 $select_table
+        # read -p "Enter col name sperated by ':' :  " columns
+        # echo $columns
+        # awk -F: -v var="$columns" '{
+        #     if(NR>2){
+        #         for(int i=0 )
+        #         print $var
+        #         }
+        #     }' $select_table
+        select col in `head -1 $select_table | tr ":" " "`;do
+            case $REPLY in 
+                $REPLY) 
+                    if (($REPLY > 0 && $REPLY <= `head -1 m |tr ":" " "|wc -w`)); then
+                        awk -F: -v var=$REPLY '{if(NR>2){print $var}}' $select_table
+                    else
+                        echo "col not exist"
+                    fi
+                    ;;
+                *)echo "col not exist";;
+            esac
+        done
+    }
+    ls
+    read -p "Enter the table that you want to select from it: " select_table
+    if [[ `find -name $select_table 2> /dev/null` ]];then
+        select opt in "select by all" "select by col" "select by specific word" "exit";do
+            case $opt in 
+                "select by all") sed -n '3,$p' $select_table;;
+                "select by col") select_col;;
+                "select by specific word") 
+                    read -p "enter the word: " word
+                    if [[ `tail -n +3 s|grep -i "$word"` ]]; then
+                        echo `tail -n +3 s|grep -i "$word"`
+                    else
+                        echo "$word doesn't exsit"
+                    fi
+                ;;
+                "exit") db_actions;;
+                *) echo invalid choise
+            esac
+        done
+    else
+        if [ -z $ins_table ]; then
+            echo "table name is empty"
+        else
+            echo "$ins_table is Invalid table name"
+        fi
     fi
 }
 
