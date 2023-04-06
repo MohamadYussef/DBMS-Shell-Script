@@ -130,6 +130,7 @@ create_table() {
             done
             index=1
             while true; do
+                echo
                 read -p "Enter Primary key data type: " pk_t
                 if [ $pk_t = int ] || [ $pk_t = string ]; then
                     echo -en "\n${pk_t}": >>$table_name
@@ -321,12 +322,16 @@ update_table() {
 
 list_table(){
     echo
-    for i in `ls`; do
-        echo "Table name: $i,\
-            number of fields: `head -1 $i|tr ":" " "| wc -w`,\
-            number of records:$(tail -n +3 $i | wc -l),\
-            size: $(du -sh $i | cut -f 1)"
-    done
+    if [ -n "$(ls)" ];then
+        for i in `ls`; do
+            echo "Table name: $i,\
+                number of fields: `head -1 $i|tr ":" " "| wc -w`,\
+                number of records:$(tail -n +3 $i | wc -l),\
+                size: $(du -sh $i | cut -f 1)"
+        done
+    else
+        echo "NO tables exists"
+    fi
     echo
 }
 
