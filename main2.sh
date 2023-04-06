@@ -97,8 +97,8 @@ db_actions() {
         "Create Table") create_table ;;
         "Drop Table") echo "function not added yet" ;;
         "Insert Table") insert_table ;;
-        "Select Table") select_table ;;
-        "Delete Table") delete_table ;;
+        "Select Table") echo "function not added yet" ;;
+        "Delete Table") echo "function not added yet" ;;
         "List Table") echo "function not added yet" ;;
         "Update Table") update_table ;;
         "Return to the main menu")
@@ -113,7 +113,7 @@ db_actions() {
 
 create_table() {
     read -p "Enter the table name: " table_name
-    if [ -e ./$table_name ]; then
+    if [ -e ./$table_name ]; then #check if table name exist
         echo "Table already exist"
         create_table
     else
@@ -121,10 +121,10 @@ create_table() {
             touch ./$table_name
             read -p "Enter the number of fields: " fields_num
             read -p "Enter Primary key: " pk
-            echo -n ${pk}: >>$table_name
-            index=1
+            echo -n ${pk}: >>$table_name # Insert Primary key
+            index=1                      # index = 1 so index number matches field number when the loop starts
             while [ $index -lt $fields_num ]; do
-                read -p "Enter name for field $index: " field_name
+                read -p "Enter name for field $index: " field_name # loop n number fields to insert each field name
                 echo -n ${field_name}: >>$table_name
                 let index++
             done
@@ -181,13 +181,13 @@ check_datatype() {
 }
 
 insert_table() {
-    clear
     ls
     read -p "Enter the table that you want to insert it: " ins_table
-    if [[ $(find -name $ins_table 2>/dev/null) ]]; then
+    if [[ $(find -name $ins_table) ]]; then
         fields_num=$(awk -F: '{print NF}' $ins_table | head -1)
         for ((i = 1; i <= $fields_num; i++)); do
             status=""
+            echo this is $i
             if [ $i -eq 1 ]; then
                 while true; do
                     if [ "$status" = "done" ]; then
@@ -223,80 +223,15 @@ insert_table() {
         sed -i 's/:$//' $ins_table
         sed -i 's/^://' $ins_table
     else
-        if [ -z $ins_table ]; then
-            echo "table name is empty"
-        else
-            echo "$ins_table is Invalid table name"
-        fi
-    fi
-}
-
-select_table() {
-    clear
-    select_col() {
-        select col in $(head -1 $select_table | tr ":" " "); do
-            case $REPLY in
-            $REPLY)
-                if (($REPLY > 0 && $REPLY <= $(head -1 m | tr ":" " " | wc -w))); then
-                    awk -F: -v var=$REPLY '{if(NR>2){print $var}}' $select_table
-                else
-                    echo "col not exist"
-                fi
-                ;;
-            *) echo "col not exist" ;;
-            esac
-        done
-    }
-    ls
-    read -p "Enter the table that you want to select from it: " select_table
-    if [[ $(find -name $select_table 2>/dev/null) ]]; then
-        select opt in "select by all" "select by col" "select by specific word" "exit"; do
-            case $opt in
-            "select by all") sed -n '3,$p' $select_table ;;
-            "select by col") select_col ;;
-            "select by specific word")
-                read -p "enter the word: " word
-                if [[ $(tail -n +3 $select_table | grep -i "$word") ]]; then
-                    echo $(tail -n +3 $select_table | grep -i "$word")
-                else
-                    echo "$word doesn't exsit"
-                fi
-                ;;
-            "exit") db_actions ;;
-            *) echo invalid choise ;;
-            esac
-        done
-    else
-        if [ -z $ins_table ]; then
-            echo "table name is empty"
-        else
-            echo "$ins_table is Invalid table name"
-        fi
-    fi
-}
-
-delete_table() {
-    ls
-    read -p "Enter the table that you want to delete from it: " select_table
-    if [[ $(find -name $select_table 2>/dev/null) ]]; then
-        read -p "enter the word from the row you want to delete: " word
-        if [[ $(tail -n +3 $select_table | grep -i "$word") ]]; then
-            sed -i "/$word/d" $select_table
-            echo "the row deleted successfully "
-        else
-            echo "$word doesn't exsit"
-        fi
-    else
-        echo "$select_table doesn't exist"
+        echo "$ins_table is Invalid table name"
     fi
 }
 
 update_table() {
     read -p "Enter Table Name : " table_name
     if [ $(ls | grep -x $table_name) ]; then
-        read -p "Enter Coloumn Name : " col_name
-        fields=($(head -1 $tablename | sed -n 's/:/ /gp'))
-        num_of_fields=${#fields[@]}
+        read -p "Enter Field Name : " field_name
+        fields=($(sed -n '1p' $table_name | sed -n 's/:/ /gp'))
         match_found=""
         for field in ${fields[@]}; do
             if [ $field_name = $field ]; then
@@ -304,13 +239,7 @@ update_table() {
             fi
         done
         if [ $match_found ]; then
-            read -p "Enter Primary key: " pk
-            if [ $(cut -d : -f 1 $table_name | sed -n '3,$p' | grep $pk) ]; then
-                read -p "Insert new value: " new_value
-                echo "to be continued"
-            else
-                echo "Primary key not found"
-            fi
+            echo "match found"
         else
             echo "Field Doesn't Exist"
         fi
