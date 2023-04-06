@@ -294,8 +294,9 @@ delete_table() {
 update_table() {
     read -p "Enter Table Name : " table_name
     if [ $(ls | grep -x $table_name) ]; then
-        read -p "Enter Field Name : " field_name
-        fields=($(sed -n '1p' $table_name | sed -n 's/:/ /gp'))
+        read -p "Enter Coloumn Name : " col_name
+        fields=($(head -1 $tablename | sed -n 's/:/ /gp'))
+        num_of_fields=${#fields[@]}
         match_found=""
         for field in ${fields[@]}; do
             if [ $field_name = $field ]; then
@@ -303,9 +304,10 @@ update_table() {
             fi
         done
         if [ $match_found ]; then
-            read -p "Enter Primary key" pk
+            read -p "Enter Primary key: " pk
             if [ $(cut -d : -f 1 $table_name | sed -n '3,$p' | grep $pk) ]; then
-                echo "Primary key found"
+                read -p "Insert new value: " new_value
+                echo "to be continued"
             else
                 echo "Primary key not found"
             fi
