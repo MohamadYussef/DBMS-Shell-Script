@@ -1,6 +1,7 @@
 #!/bin/bash
 
 main_menu() {
+    display_screen "main menu"
     PS3='>'
     echo "Choose an action: "
     select choice in "Create Database" "List Databases" "Connect To Database" "Drop Database" "exit"; do
@@ -30,6 +31,7 @@ main_menu() {
     done
 }
 create_db() {
+    display_screen "Create Database"
     read -p "Enter the name of the Database that will be created: " db_name
     if [ -e ./db/"$db_name" ]; then
         echo "Database name already exist"
@@ -45,9 +47,10 @@ create_db() {
 }
 
 drop_db() {
+    display_screen "Drop Database"
     echo -e "Available Databases: \n$(ls -1 ./db)"
     read -p "Enter the Database you want to remove: " db_drop
-    if [[ $(find ./db -name $db_drop) ]]; then
+    if [[ $(find ./db -name $db_drop 2> /dev/null) ]]; then
         rm -r ./db/$db_drop
         echo "The $db_drop is removed successfully"
     else
@@ -71,7 +74,7 @@ init() {
 }
 
 connect_db() {
-
+    display_screen "Connect to Database"
     PS3="Select a Database to connect to: "
     echo -e "Available Databases:"
     select db_name in $(ls ./db); do
@@ -91,6 +94,7 @@ connect_db() {
 }
 
 db_actions() {
+    display_screen "$db_name database"
     echo "Choose an action: "
     select db_action in "Create Table" "Drop Table" "Insert Table" "Select Table" "Delete Table" "List Table" "Update Table" "Return to the main menu"; do
         case $db_action in
@@ -112,6 +116,7 @@ db_actions() {
 }
 
 create_table() {
+    display_screen "Create table"
     read -p "Enter the table name: " table_name
     if [ -e ./$table_name ]; then
         echo "Table already exist"
@@ -183,6 +188,7 @@ check_datatype() {
 
 insert_table() {
     clear
+    display_screen "Insert table"
     ls
     read -p "Enter the table that you want to insert it: " ins_table
     if [[ $(find -name $ins_table 2>/dev/null) ]]; then
@@ -234,11 +240,12 @@ insert_table() {
 
 select_table() {
     clear
+    display_screen "Select table"
     select_col() {
         select col in $(head -1 $select_table | tr ":" " "); do
             case $REPLY in
             $REPLY)
-                if (($REPLY > 0 && $REPLY <= $(head -1 m | tr ":" " " | wc -w))); then
+                if (($REPLY > 0 && $REPLY <= $(head -1 $select_table | tr ":" " " | wc -w))); then
                     awk -F: -v var=$REPLY '{if(NR>2){print $var}}' $select_table
                 else
                     echo "col not exist"
@@ -278,6 +285,7 @@ select_table() {
 
 delete_table() {
     ls
+    display_screen "Delete table"
     read -p "Enter the table that you want to delete from it: " select_table
     if [[ $(find -name $select_table 2>/dev/null) ]]; then
         read -p "enter the word from the row you want to delete: " word
@@ -293,6 +301,7 @@ delete_table() {
 }
 
 update_table() {
+    display_screen "Update table"
     read -p "Enter Table Name : " table_name
     if [ $(ls | grep -x $table_name) ]; then
         read -p "Enter Coloumn Name : " col_name
@@ -322,6 +331,8 @@ update_table() {
 
 list_table(){
     echo
+    display_screen "List tables"
+    echo "number of tables: $(ls|wc -w)"
     if [ -n "$(ls)" ];then
         for i in `ls`; do
             echo "Table name: $i,\
@@ -333,6 +344,15 @@ list_table(){
         echo "NO tables exists"
     fi
     echo
+}
+
+display_screen(){
+    echo "*************************************************"
+    cols=$(tput cols)
+    text="$1"
+    printf "*\033[1m%*s\n" $(((${#text}+$cols)/5)) "$text"
+    echo "*************************************************"
+
 }
 
 init
