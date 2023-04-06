@@ -173,13 +173,11 @@ check_datatype() {
             status=done
         fi
     elif [ "$data_type" = bool ]; then
-        set -x
         if ! [[ "$field_data" =~ ^[Tt][Rr][Uu][Ee]$ ]] && ! [[ "$field_data" =~ ^[Ff][Aa][Ll][Ss][Ee]$ ]]; then
             echo "Invalid input by data type"
         else
             status=done
         fi
-        set +x
     fi
 }
 
