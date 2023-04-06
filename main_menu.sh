@@ -99,7 +99,7 @@ db_actions() {
         "Insert Table") insert_table ;;
         "Select Table") select_table ;;
         "Delete Table") delete_table ;;
-        "List Table") echo "function not added yet" ;;
+        "List Table") list_table ;;
         "Update Table") update_table ;;
         "Return to the main menu")
             cd ../..
@@ -317,6 +317,17 @@ update_table() {
     else
         echo "Table Doesn't Exist"
     fi
+}
+
+list_table(){
+    echo
+    for i in `ls`; do
+        echo "Table name: $i,\
+            number of fields: `head -1 $i|tr ":" " "| wc -w`,\
+            number of records:$(tail -n +3 $i | wc -l),\
+            size: $(du -sh $i | cut -f 1)"
+    done
+    echo
 }
 
 init
