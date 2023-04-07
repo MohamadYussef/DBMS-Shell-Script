@@ -237,7 +237,7 @@ select_table() {
         select col in $(head -1 $select_table | tr ":" " "); do
             case $REPLY in
             $REPLY)
-                if (($REPLY > 0 && $REPLY <= $(head -1 m | tr ":" " " | wc -w))); then
+                if (($REPLY > 0 && $REPLY <= $(head -1 $select_table | tr ":" " " | wc -w))); then
                     awk -F: -v var=$REPLY '{if(NR>2){print $var}}' $select_table
                 else
                     echo "col not exist"
@@ -295,19 +295,16 @@ update_table() {
     read -p "Enter Table Name : " table_name
     if [ $(ls | grep -x $table_name) ]; then
         read -p "Enter Coloumn Name : " col_name
-        fields=($(head -1 $tablename | sed -n 's/:/ /gp'))
-        num_of_fields=${#fields[@]}
-        match_found=""
-        for field in ${fields[@]}; do
-            if [ $field_name = $field ]; then
-                match_found=true
-            fi
-        done
-        if [ $match_found ]; then
+        field_num=$(awk -F: '{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$col_name'") print i}}}' $table_name)
+        if [ $field_num ]; then
             read -p "Enter Primary key: " pk
-            if [ $(cut -d : -f 1 $table_name | sed -n '3,$p' | grep $pk) ]; then
+            record_num=$(awk -F: '{if($1=="'$pk'"){print NR}}' $table_name)
+            if [ $record_num ]; then
+                echo "field number is $field_num and record number is $record_num"
                 read -p "Insert new value: " new_value
-                echo "to be continued"
+                awk -F: '{if(NR=="'$record_num'"){$"'$field_num'"="'$new_value'"} print}' $table_name | sed 's/ /:/g' > tmp
+                cat tmp > $table_name
+                
             else
                 echo "Primary key not found"
             fi
@@ -316,6 +313,17 @@ update_table() {
         fi
     else
         echo "Table Doesn't Exist"
+    fi
+}
+
+drop_table() {
+    echo -e "Available Tables: \n$(ls -1 ./db)"
+    read -p "Enter the table you want to drop: " table_drop
+    if [[ $(find . -name $table_drop) ]]; then
+        rm  ./$table_drop
+        echo "The $table_drop is removed successfully"
+    else
+        echo "$table_drop table not exist"
     fi
 }
 
