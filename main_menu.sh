@@ -165,15 +165,20 @@ create_table() {
 
 check_datatype() {
     datatype_postion=$1
-    data_type=$(awk -F: -v var="$datatype_postion" '{if(NR==2)print $var}' $ins_table)
+    update_data=$3
+    if [ "$2" ]; then
+        data_type=$(awk -F: -v var="$datatype_postion" '{if(NR==2)print $var}' $2)
+    else
+        data_type=$(awk -F: -v var="$datatype_postion" '{if(NR==2)print $var}' $ins_table)
+    fi
     if [ "$data_type" = int ]; then
-        if ! [[ "$field_data" =~ ^[0-9]+$ ]]; then
+        if ! [[ "$field_data" =~ ^[0-9]+$ ]] && ! [[ "$update_data" =~ ^[0-9]+$ ]]; then
             echo "Invalid input by data type"
         else
             status=done
         fi
     elif [ "$data_type" = string ]; then
-        if ! [[ "$field_data" =~ ^[a-zA-Z]+[a-zA-Z0-9_]+ ]]; then
+        if ! [[ "$field_data" =~ ^[a-zA-Z]+[a-zA-Z0-9_]+ ]] && ! [[ "$update_data" =~ ^[a-zA-Z]+[a-zA-Z0-9_]+ ]]; then
             echo "Invalid input by data type"
         else
             status=done
@@ -312,10 +317,20 @@ update_table() {
             record_num=$(awk -F: '{if($1=="'$pk'"){print NR}}' $table_name)
             if [ $record_num ]; then
                 echo "field number is $field_num and record number is $record_num"
-                read -p "Insert new value: " new_value
+                status=""
+                while true; do
+                    if [ "$status" = "done" ]; then
+                        break
+                    fi
+                    read -p "Insert new value: " new_value
+                    if [ -z $new_value ]; then
+                        echo "value is NULL"
+                    elif [ "$status" != "done" ]; then
+                        check_datatype $field_num $table_name $new_value
+                    fi
+                done
                 awk -F: '{if(NR=="'$record_num'"){$"'$field_num'"="'$new_value'"} print}' $table_name | sed 's/ /:/g' >tmp
                 cat tmp >$table_name
-
             else
                 echo "Primary key not found"
             fi
