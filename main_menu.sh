@@ -39,7 +39,7 @@ create_db() {
     elif [ -z "$db_name" ]; then
         echo "Empty name of database, Please enter a correct name"
     else
-        if [[ "$db_name" =~ ^[a-zA-Z]+[a-zA-Z1-9_]+$ ]]; then
+        if [[ "$db_name" =~ ^[a-zA-Z]+[a-zA-Z0-9_]+$ ]]; then
             mkdir ./db/$db_name
             echo "The $db_name database was created successfully"
         else
@@ -123,14 +123,14 @@ create_table() {
         echo "Table already exist"
         create_table
     else
-        if [[ "$db_name" =~ ^[a-zA-Z]+[a-zA-Z1-9_]+ ]]; then
+        if [[ "$db_name" =~ ^[a-zA-Z]+[a-zA-Z0-9_]+ ]]; then
             touch ./$table_name
             read -p "Enter the number of fields: " fields_num
             read -p "Enter Primary key: " pk
             echo -n ${pk}: >>$table_name
             index=1
             while [ $index -lt $fields_num ]; do
-                read -p "Enter name for field $(($index+1)): " field_name
+                read -p "Enter name for field $(($index + 1)): " field_name
                 echo -n ${field_name}: >>$table_name
                 let index++
             done
@@ -146,7 +146,7 @@ create_table() {
                 fi
             done
             while [ $index -lt $fields_num ]; do
-                read -p "Enter data type for field $(($index+1)): " field_type
+                read -p "Enter data type for field $(($index + 1)): " field_type
                 if [ "$field_type" = int ] || [ "$field_type" = string ] || [ "$field_type" = bool ]; then
                     echo -n ${field_type}: >>$table_name
                     let index++
@@ -173,7 +173,7 @@ check_datatype() {
             status=done
         fi
     elif [ "$data_type" = string ]; then
-        if ! [[ "$field_data" =~ ^[a-zA-Z]+[a-zA-Z1-9_]+ ]]; then
+        if ! [[ "$field_data" =~ ^[a-zA-Z]+[a-zA-Z0-9_]+ ]]; then
             echo "Invalid input by data type"
         else
             status=done
@@ -331,7 +331,7 @@ drop_table() {
     display_screen "Drop table"
     echo -e "Available Tables: \n$(ls -1)"
     read -p "Enter the table you want to drop: " table_drop
-    if [[ $(find . -name $table_drop 2> /dev/null) ]]; then
+    if [[ $(find . -name $table_drop 2>/dev/null) ]]; then
         rm ./$table_drop
         echo "The $table_drop table is removed successfully"
     elif [ -z "$table_drop" ]; then
