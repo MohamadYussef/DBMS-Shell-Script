@@ -39,7 +39,8 @@ create_db() {
     elif [ -z "$db_name" ]; then
         echo "Empty name of database, Please enter a correct name"
     else
-        if [[ "$db_name" =~ ^[a-zA-Z]+[a-zA-Z0-9_]+$ ]]; then
+        if [[ "$db_name" =~ ^[a-zA-Z]+[a-zA-Z0-9_]+ ]]; then
+            db_name=$(echo $db_name | sed "s/ /_/g")
             mkdir ./db/$db_name
             echo "The $db_name database was created successfully"
         else
@@ -123,7 +124,8 @@ create_table() {
         echo "Table already exist"
         create_table
     else
-        if [[ "$db_name" =~ ^[a-zA-Z]+[a-zA-Z0-9_]+ ]]; then
+        if [[ "$table_name" =~ ^[a-zA-Z]+[a-zA-Z0-9_]+ ]]; then
+            table_name=$(echo $table_name | sed "s/ /_/g")
             touch ./$table_name
             read -p "Enter the number of fields: " fields_num
             read -p "Enter Primary key: " pk
@@ -308,6 +310,8 @@ delete_table() {
 
 update_table() {
     display_screen "Update table"
+    echo "Availabe tables in Database: "
+    ls
     read -p "Enter Table Name : " table_name
     if [ $(ls | grep -x $table_name) ]; then
         read -p "Enter Coloumn Name : " col_name
@@ -316,7 +320,7 @@ update_table() {
             read -p "Enter Primary key: " pk
             record_num=$(awk -F: '{if($1=="'$pk'"){print NR}}' $table_name)
             if [ $record_num ]; then
-                echo "field number is $field_num and record number is $record_num"
+                # echo "field number is $field_num and record number is $record_num"
                 status=""
                 while true; do
                     if [ "$status" = "done" ]; then
