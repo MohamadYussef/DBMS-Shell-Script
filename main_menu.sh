@@ -50,7 +50,7 @@ drop_db() {
     display_screen "Drop Database"
     echo -e "Available Databases: \n$(ls -1 ./db)"
     read -p "Enter the Database you want to remove: " db_drop
-    if [[ $(find ./db -name $db_drop 2> /dev/null) ]]; then
+    if [[ $(find ./db -name $db_drop 2>/dev/null) ]]; then
         rm -r ./db/$db_drop
         echo "The $db_drop is removed successfully"
     else
@@ -301,23 +301,19 @@ delete_table() {
 }
 
 update_table() {
-    display_screen "Update table"
     read -p "Enter Table Name : " table_name
     if [ $(ls | grep -x $table_name) ]; then
         read -p "Enter Coloumn Name : " col_name
-        fields=($(head -1 $tablename | sed -n 's/:/ /gp'))
-        num_of_fields=${#fields[@]}
-        match_found=""
-        for field in ${fields[@]}; do
-            if [ $field_name = $field ]; then
-                match_found=true
-            fi
-        done
-        if [ $match_found ]; then
+        field_num=$(awk -F: '{if(NR==1){for(i=1;i<=NF;i++){if($i=="'$col_name'") print i}}}' $table_name)
+        if [ $field_num ]; then
             read -p "Enter Primary key: " pk
-            if [ $(cut -d : -f 1 $table_name | sed -n '3,$p' | grep $pk) ]; then
+            record_num=$(awk -F: '{if($1=="'$pk'"){print NR}}' $table_name)
+            if [ $record_num ]; then
+                echo "field number is $field_num and record number is $record_num"
                 read -p "Insert new value: " new_value
-                echo "to be continued"
+                awk -F: '{if(NR=="'$record_num'"){$"'$field_num'"="'$new_value'"} print}' $table_name | sed 's/ /:/g' >tmp
+                cat tmp >$table_name
+
             else
                 echo "Primary key not found"
             fi
@@ -329,14 +325,25 @@ update_table() {
     fi
 }
 
-list_table(){
+drop_table() {
+    echo -e "Available Tables: \n$(ls -1 ./db)"
+    read -p "Enter the table you want to drop: " table_drop
+    if [[ $(find . -name $table_drop) ]]; then
+        rm ./$table_drop
+        echo "The $table_drop is removed successfully"
+    else
+        echo "$table_drop table not exist"
+    fi
+}
+
+list_table() {
     echo
     display_screen "List tables"
-    echo "number of tables: $(ls|wc -w)"
-    if [ -n "$(ls)" ];then
-        for i in `ls`; do
+    echo "number of tables: $(ls | wc -w)"
+    if [ -n "$(ls)" ]; then
+        for i in $(ls); do
             echo "Table name: $i,\
-                number of fields: `head -1 $i|tr ":" " "| wc -w`,\
+                number of fields: $(head -1 $i | tr ":" " " | wc -w),\
                 number of records:$(tail -n +3 $i | wc -l),\
                 size: $(du -sh $i | cut -f 1)"
         done
@@ -346,11 +353,11 @@ list_table(){
     echo
 }
 
-display_screen(){
+display_screen() {
     echo "*************************************************"
     cols=$(tput cols)
     text="$1"
-    printf "*\033[1m%*s\n" $(((${#text}+$cols)/5)) "$text"
+    printf "*\033[1m%*s\n" $(((${#text} + $cols) / 5)) "$text"
     echo "*************************************************"
 
 }
