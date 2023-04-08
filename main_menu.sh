@@ -13,6 +13,7 @@ main_menu() {
             ;;
         "List Databases")
             clear
+            display_screen "List Database"
             echo -e "Available Databases:\n$(ls -1 ./db)"
             echo -e "\nPress Enter to view menu"
             ;; # ls -F ./db | grep / | sed -n 's/\///gp' ;;
@@ -33,11 +34,12 @@ main_menu() {
 create_db() {
     display_screen "Create Database"
     read -p "Enter the name of the Database that will be created: " db_name
-    if [ -e ./db/"$db_name" ]; then
+    if [ -e ./db/"$db_name" ] && [ -n "$db_name" ]; then
         echo "Database name already exist"
-
+    elif [ -z "$db_name" ]; then
+        echo "Empty name of database, Please enter a correct name"
     else
-        if [[ "$db_name" =~ ^[a-zA-Z]+[a-zA-Z1-9_]+ ]]; then
+        if [[ "$db_name" =~ ^[a-zA-Z]+[a-zA-Z1-9_]+$ ]]; then
             mkdir ./db/$db_name
             echo "The $db_name database was created successfully"
         else
@@ -53,8 +55,10 @@ drop_db() {
     if [[ $(find ./db -name $db_drop 2>/dev/null) ]]; then
         rm -r ./db/$db_drop
         echo "The $db_drop is removed successfully"
+    elif [ -z "$db_drop" ]; then
+        echo "Empty name of database, Please enter a correct name"
     else
-        echo "$db_drop Database not exist"
+        echo "$db_drop Database does not exist"
     fi
 }
 
@@ -84,22 +88,19 @@ connect_db() {
             clear
             db_actions
         else
-            echo "db not exist"
+            echo "Database does not exist"
             connect_db
-
         fi
-
     done
-
 }
 
 db_actions() {
-    display_screen "$db_name database"
+    display_screen "$db_name Database"
     echo "Choose an action: "
     select db_action in "Create Table" "Drop Table" "Insert Table" "Select Table" "Delete Table" "List Table" "Update Table" "Return to the main menu"; do
         case $db_action in
         "Create Table") create_table ;;
-        "Drop Table") echo "function not added yet" ;;
+        "Drop Table") drop_table ;;
         "Insert Table") insert_table ;;
         "Select Table") select_table ;;
         "Delete Table") delete_table ;;
@@ -118,7 +119,7 @@ db_actions() {
 create_table() {
     display_screen "Create table"
     read -p "Enter the table name: " table_name
-    if [ -e ./$table_name ]; then
+    if [ -e ./"$table_name" ]; then
         echo "Table already exist"
         create_table
     else
@@ -129,7 +130,7 @@ create_table() {
             echo -n ${pk}: >>$table_name
             index=1
             while [ $index -lt $fields_num ]; do
-                read -p "Enter name for field $index: " field_name
+                read -p "Enter name for field $(($index+1)): " field_name
                 echo -n ${field_name}: >>$table_name
                 let index++
             done
@@ -145,8 +146,8 @@ create_table() {
                 fi
             done
             while [ $index -lt $fields_num ]; do
-                read -p "Enter data type for field $index: " field_type
-                if [ $field_type = int ] || [ $field_type = string ] || [ $field_type = bool ]; then
+                read -p "Enter data type for field $(($index+1)): " field_type
+                if [ "$field_type" = int ] || [ "$field_type" = string ] || [ "$field_type" = bool ]; then
                     echo -n ${field_type}: >>$table_name
                     let index++
                 else
@@ -301,6 +302,7 @@ delete_table() {
 }
 
 update_table() {
+    display_screen "Update table"
     read -p "Enter Table Name : " table_name
     if [ $(ls | grep -x $table_name) ]; then
         read -p "Enter Coloumn Name : " col_name
@@ -326,11 +328,14 @@ update_table() {
 }
 
 drop_table() {
-    echo -e "Available Tables: \n$(ls -1 ./db)"
+    display_screen "Drop table"
+    echo -e "Available Tables: \n$(ls -1)"
     read -p "Enter the table you want to drop: " table_drop
-    if [[ $(find . -name $table_drop) ]]; then
+    if [[ $(find . -name $table_drop 2> /dev/null) ]]; then
         rm ./$table_drop
-        echo "The $table_drop is removed successfully"
+        echo "The $table_drop table is removed successfully"
+    elif [ -z "$table_drop" ]; then
+        echo "Empty name of table, Please enter a correct name"
     else
         echo "$table_drop table not exist"
     fi
@@ -354,10 +359,10 @@ list_table() {
 }
 
 display_screen() {
-    echo "*************************************************"
     cols=$(tput cols)
     text="$1"
-    printf "*\033[1m%*s\n" $(((${#text} + $cols) / 5)) "$text"
+    echo "*************************************************"
+    printf "\033[1m%*s\n" $(((${#text} + $cols) / 5)) "$text"
     echo "*************************************************"
 
 }
